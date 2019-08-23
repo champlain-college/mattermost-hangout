@@ -1,5 +1,6 @@
 var express = require('express');
 var https = require('https');
+var fs = require('fs');
 var exphbs = require('express-handlebars');
 var bodyParser = require('body-parser');
 var log = require('./app/lib/log.js');
@@ -16,6 +17,16 @@ app.set('views', __dirname + '/app/views');
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/app/public'));
+
+// Require key on all requests
+app.use(function(req, res, next){
+    if(req.body.key != (process.env.ACCESS_KEY || 'add-key-please')){
+        res.status(401).send('No dice!');
+    } else {
+        next();
+    }
+});
+
 
 require(__dirname + '/app/routes')(app);
 
