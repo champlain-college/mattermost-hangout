@@ -1,4 +1,5 @@
 var express = require('express');
+var https = require('https');
 var exphbs = require('express-handlebars');
 var bodyParser = require('body-parser');
 var log = require('./app/lib/log.js');
@@ -21,6 +22,10 @@ require(__dirname + '/app/routes')(app);
 log.debug("Auth.js is located at " + require('./app/lib/config.js').getAuthPath());
 
 var port = Number(process.env.PORT || 5000);
-app.listen(port, function() {
-	log.info('Listening on ' + port);
-});
+var privateKey = fs.readFileSync(process.env.SSL_KEY || 'privatekey.pem' );
+var certificate = fs.readFileSync(process.env.SSL_CERT || 'certificate.pem' );
+
+https.createServer({
+    key: privateKey,
+    cert: certificate
+}, app).listen(port);
