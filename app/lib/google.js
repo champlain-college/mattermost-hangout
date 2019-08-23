@@ -1,4 +1,5 @@
 var moment = require('moment');
+var uuidv1 = require('uuid/v1');
 var google = require('googleapis');
 var calendar = google.calendar('v3');
 var fs = require('fs')
@@ -80,9 +81,11 @@ module.exports = (function() {
 	
 	createHangoutMeeting = function(user_name, callback) {
 		var now = moment().format();
+        var uuid = uuidv1();
 		loadAuth();
 		calendar.events.insert({
 			calendarId: 'primary',
+            conferenceDataVersion: 1,
 			resource: {
 				summary: user_name + '\'s hangout',
 				description: config.values.calendar_description,
@@ -98,6 +101,14 @@ module.exports = (function() {
 				end: {
 					dateTime: now
 				},
+                conferenceData: {
+                    createRequest: {
+                        requestId: uuid,
+                        conferenceSolutionKey: {
+                            type: 'hangoutsMeet'
+                        }
+                    }
+                },
 				attendees: []
 			},
 			auth: oauth2Client
