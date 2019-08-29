@@ -3,18 +3,27 @@ var google = require('../lib/google.js');
 var mattermost = require('../lib/mattermost.js');
 var log = require('../lib/log.js');
 
+function checkClientIp(req, res, next){
+    if(req.connection.remoteAddress != '127.0.0.1'){
+        res.status(401).send('No dice!');
+    } else {
+        next();
+    }
+}
+
 module.exports = function(app){
-	app.post('/', function(req, res){
+	app.post('/', checkClientIp, function(req, res){
 		if(!req.body.user_name) {
 			return core.error(res, 'Parameter user_name is missing!');
 		}
-		google.createHangoutMeeting(req.body.user_name, function(err, event) {
+		google.createHangoutMeeting(req.body, function(err, event) {
+			event = event.data;
 			res.setHeader('Content-Type', 'application/json');
 			if(err) {
 				res.status(200).send(mattermost.responseMessage('An error occured!\n``' + err + '``', 'ephemeral'));
 			}
 			
-			var message = (process.env.MESSAGE || '**{user} invites to Hangout**\nClick <{link}|here> to join!');
+			var message = (process.env.MESSAGE || '**{user} initiated a Hangout**\nClick <{link}|here> to join!');
 			message = message.replace('{user}', req.body.user_name);
 			message = message.replace('{link}', event.hangoutLink);
 						

@@ -1,6 +1,6 @@
 var moment = require('moment');
 var uuidv1 = require('uuid/v1');
-var google = require('googleapis');
+var {google} = require('googleapis');
 var calendar = google.calendar('v3');
 var fs = require('fs')
 var config = require('./config.js');
@@ -79,7 +79,7 @@ module.exports = (function() {
 		});
 	}
 	
-	createHangoutMeeting = function(user_name, callback) {
+	createHangoutMeeting = function(req_data, callback) {
 		var now = moment().format();
         var uuid = uuidv1();
 		loadAuth();
@@ -87,8 +87,8 @@ module.exports = (function() {
 			calendarId: 'primary',
             conferenceDataVersion: 1,
 			resource: {
-				summary: user_name + '\'s hangout',
-				description: config.values.calendar_description,
+				summary: req_data.user_name + '\'s hangout',
+				description: 'Team: ' + req_data.team_domain,
 				reminders: {
 					overrides: {
 						method: 'popup',
